@@ -8,7 +8,7 @@ export default {
     return axios.get("/api/ip");
   },
   initSocket(serverIP){
-    socket = openSocket("http://" + serverIP + ":8000");
+    socket = openSocket("https://secret-ocean-04091.herokuapp.com:8000");
   },
   getCategories: function(gameid) {
     return axios.get("/api/categories",

@@ -1,5 +1,5 @@
 import axios from "axios";
-import openSocket from 'socket.io-client';
+import io from 'socket.io-client';
 // const socket = openSocket('http://10.0.0.209:8000');
 let socket;
 
@@ -8,7 +8,7 @@ export default {
     return axios.get("/api/ip");
   },
   initSocket(serverIP){
-    socket = openSocket("https://" + serverIP + ":8000");
+    socket = io("https://" + serverIP + ":8000");
   },
   getCategories: function(gameid) {
     return axios.get("/api/categories",

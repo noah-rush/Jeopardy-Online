@@ -24,9 +24,12 @@ if (process.env.NODE_ENV === "production") {
 
 
 
-const uri =  process.env.MONGODB_URI;
-// const uri = 'mongodb://localhost/basketball-reference'
-mongoose.connect(uri);
+
+// Define API routes here
+// 
+// const mongoose = require('mongoose');
+
+mongoose.connect('mongodb://localhost/jeopardy');
 
 io.on('connection', (client) => {
 

@@ -8,7 +8,7 @@ export default {
     return axios.get("/api/ip");
   },
   initSocket(serverIP){
-    socket = io("https://" + serverIP + ":8000");
+    socket = io("https://" + serverIP );
   },
   getCategories: function(gameid) {
     return axios.get("/api/categories",

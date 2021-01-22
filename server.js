@@ -24,15 +24,12 @@ if (process.env.NODE_ENV === "production") {
 
 
 
-
-// Define API routes here
-// 
-// const mongoose = require('mongoose');
-
-mongoose.connect('mongodb://localhost/jeopardy');
+const uri =  process.env.MONGODB_URI;
+// const uri = 'mongodb://localhost/basketball-reference'
+mongoose.connect(uri);
 
 io.on('connection', (client) => {
-
+    console.log("we have io connection")
     client.on('subscribeToGame', (gameid) => {
         console.log('client is subscribing to game ' + gameid);
         client.join(gameid);

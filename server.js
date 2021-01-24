@@ -30,8 +30,8 @@ if (process.env.NODE_ENV === "production") {
     app.use(express.static("client/build"));
 }
 
-// const uri =  process.env.MONGODB_URI;
-const uri = 'mongodb://localhost/jeopardy'
+const uri =  process.env.MONGODB_URI;
+// const uri = 'mongodb://localhost/jeopardy'
 mongoose.connect(uri);
 
 

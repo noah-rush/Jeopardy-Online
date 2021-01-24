@@ -1,12 +1,22 @@
 const express = require("express");
 const path = require("path");
 const PORT = process.env.PORT || 3001;
-const app = express();
 const moment = require('moment');
 const mongoose = require('mongoose');
-const io = require('socket.io')();
+// const io = require('socket.io')();
 
-const ioport = 8000;
+// const ioport = 8000;
+const app = require('express')();
+const http = require('http').createServer(app);
+const io = require("socket.io")(http, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"]
+  }
+});
+
+// httpServer.listen(3000);
+
 
 
 var db = require("./models");
@@ -20,13 +30,11 @@ if (process.env.NODE_ENV === "production") {
     app.use(express.static("client/build"));
 }
 
-
-
-
-
-const uri =  process.env.MONGODB_URI;
-// const uri = 'mongodb://localhost/jeopardy'
+// const uri =  process.env.MONGODB_URI;
+const uri = 'mongodb://localhost/jeopardy'
 mongoose.connect(uri);
+
+
 
 io.on('connection', (client) => {
     console.log("we have io connection")
@@ -167,9 +175,9 @@ app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname, "./client/build/index.html"));
 });
 
-app.listen(PORT, () => {
+http.listen(PORT, () => {
     console.log(`🌎 ==> Server now on port ${PORT}!`);
 });
 
-io.listen(ioport);
-console.log('IO listening on port ', ioport);
+// io.listen(ioport);
+// console.log('IO listening on port ', ioport);

@@ -47,6 +47,7 @@ io.on('connection', (client) => {
         db.Games.findOneAndUpdate({ _id: gameid }, { $push: { answered: questionId } }, {new:true}).then(function(result) {
             io.in(gameid).emit('answerUpdate', result.answered);
         })
+        setTimeout(() => {io.in(gameid).emit("questionOver", questionId)}, 20000);
     })
     client.on('closeQuestionSignal', (gameid) =>{
         io.in(gameid).emit('gameCloseQuestion');      
@@ -61,9 +62,11 @@ io.on('connection', (client) => {
         db.Games.findOneAndUpdate({ _id: gameid }, { scores:newScores  }).then(function(result) {
         })
     })
-    client.on('buzz', (gameid, playerName) =>{
-        console.log("buzz received from " + playerName)
+    client.on('buzz', (gameid, playerName, questionId) =>{
+        console.log("buzz received from " + playerName +" on question "+ questionId)
         io.in(gameid).emit("buzzUpdate",  playerName)
+
+        setTimeout(() => {io.in(gameid).emit("timesUp",  playerName, questionId)}, 5000);
 
     })
 });

@@ -41,16 +41,18 @@ export default {
     socket.on('timer', timestamp => cb(null, timestamp));
     socket.emit('subscribeToTimer', 5000);
   },
-  connectToGame(gameID, playerId, handleQuestion, handleNewContestant, handleNewScores, handleAnswerUpdate, closeQuestion, handleBuzzUpdate, handleScoresInit){
+  connectToGame(gameID, playerId, reactFuncs){
     socket.emit('subscribeToGame', gameID);
-    socket.on('questionID', questionID =>  handleQuestion( questionID) );
-    socket.on('contestantUpdate', player =>  handleNewContestant(player) );
-    socket.on('scoresUpdate', (scores, turn, guess, correct) =>  handleNewScores(scores, turn, guess, correct) );
-    socket.on('scoresInit', (scores) =>  handleScoresInit(scores) );
+    socket.on('questionID', questionID =>  reactFuncs['handleQuestion']( questionID) );
+    socket.on('contestantUpdate', player =>  reactFuncs['handleNewContestant'](player) );
+    socket.on('scoresUpdate', (scores, turn, guess, correct) =>  reactFuncs['handleNewScores'](scores, turn, guess, correct) );
+    socket.on('scoresInit', (scores) =>  reactFuncs['handleScoresInit'](scores) );
 
-    socket.on('answerUpdate', answers =>  handleAnswerUpdate(answers) );
-    socket.on('gameCloseQuestion', () => {closeQuestion()} );
-    socket.on('buzzUpdate', (playerName) => {handleBuzzUpdate(playerName)} );
+    socket.on('answerUpdate', answers =>  reactFuncs['handleAnswerUpdate'](answers) );
+    socket.on('gameCloseQuestion', () => {reactFuncs['closeQuestion']()} );
+    socket.on('buzzUpdate', (playerName) => {reactFuncs['handleBuzzUpdate'](playerName)} );
+    socket.on('timesUp', (playerName, questionId) => {reactFuncs['timesUp'](playerName, questionId)} );
+    socket.on('questionOver', (questionId) => {reactFuncs['questionOver'](questionId)} );
 
     return axios.post("/api/add-to-game", {
       game:gameID,
@@ -67,8 +69,8 @@ export default {
   submitScores(gameid, scores, turn, answer, correct){
     socket.emit('newScores', gameid, scores, turn, answer, correct)
   },
-  buzz(gameID, playerName){
-    socket.emit('buzz', gameID, playerName)
+  buzz(gameID, playerName, question){
+    socket.emit('buzz', gameID, playerName, question)
   }
   
 };

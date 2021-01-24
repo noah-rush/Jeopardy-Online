@@ -23,54 +23,57 @@ import SpeechRecognition from './Components/SpeechRecognition/SpeechRecognition'
 
 
 class App extends Component {
-    
- 
-        state = {
 
-            categories: [],
-            activeQuestion: "",
-            activeAnswer: false,
-            activeResult: false,
 
-            timer: "",
-            userScore: 0,
-            mainScreen: true,
-            activeCategory: "",
-            newGameTitle: "",
-            games: [],
-            answered:[],
-            gameID:"",
-            round:0, 
-            timestamp: "No Timestamp yet",
-            playerID: "",
-            playerName:'',
-            playerNum:0,
-            contestants: [],
-            scores:[],
-            turn:1,
-            buzzedIn:"",
-            canbuzz:true,
-            correct:false, 
-            resultTimer:""
-        }
-    
-    loadCookies(){
+    state = {
+
+        categories: [],
+        activeQuestion: "",
+        activeAnswer: false,
+        activeResult: false,
+
+        timer: "",
+        userScore: 0,
+        mainScreen: true,
+        activeCategory: "",
+        newGameTitle: "",
+        games: [],
+        answered: [],
+        gameID: "",
+        round: 0,
+        timestamp: "No Timestamp yet",
+        playerID: "",
+        playerName: '',
+        playerNum: 0,
+        contestants: [],
+        scores: [],
+        turn: 1,
+        buzzedIn: "",
+        canbuzz: true,
+        correct: false,
+        resultTimer: "",
+        questionOver: false,
+        triedToAnswer: 0
+
+    }
+
+    loadCookies() {
         // cookies = instanceOf(Cookies).isRequired;
         const cookies = new Cookies();
         // console.log(Cookies)
         // console.log(cookies.get("playerName"));
         // cookies.set("playerName", "juancho")
         this.setState({
-            playerName:cookies.get("playerName") || "",
-            playerID:cookies.get("playerID") || "",
+            playerName: cookies.get("playerName") || "",
+            playerID: cookies.get("playerID") || "",
 
         })
     }
 
     componentDidMount() {
-       
+
         API.getSocketIP().then(
-            (res) =>{
+            (res) => {
                 console.log(res);
                 API.initSocket(res.data)
             })
@@ -90,55 +93,94 @@ class App extends Component {
         API.getCategories(gameID)
             .then(res => this.setState({
                 categories: res.data.jeopardyCategories,
-                doubleCategories : res.data.doubleCategories,
-                games:[],
-                answered:res.data.answered,
+                doubleCategories: res.data.doubleCategories,
+                games: [],
+                answered: res.data.answered,
                 round: res.data.round
             }))
             .catch(err => console.log(err));
 
     }
     handleNewContestant = (players) => {
-        this.setState({contestants: players})
-        for(var i = 0; i< players.length; i++){
-            if(this.state.playerID == players[i]._id){
-                this.state.playerNum = i+1;
+        this.setState({ contestants: players })
+        for (var i = 0; i < players.length; i++) {
+            if (this.state.playerID == players[i]._id) {
+                this.state.playerNum = i + 1;
             }
         }
     }
-      handleScoresInit = (scores) => {
-     
-        this.setState({scores: scores})
+    handleScoresInit = (scores) => {
+
+        this.setState({ scores: scores })
     }
     handleNewScores = (scores, turn, guess, correct) => {
         // console.log(turn)
-        if(turn != 0 && turn != undefined){
-            this.setState({turn:turn});
+        if (turn != 0 && turn != undefined) {
+            this.setState({ turn: turn });
+        }
+        if (correct) {
+            this.setState({
+                scores: scores,
+                guess: guess,
+                correct: correct,
+                activeResult: true,
+                resultTimer: setTimeout(() => {
+                    this.closeQuestionFinal()
+                }, 1500)
+            })
+        } else {
+
+            this.setState({
+                scores: scores,
+                guess: guess,
+                correct: correct,
+                activeResult: true,
+                triedToAnswer: this.state.triedToAnswer + 1,
+                resultTimer: setTimeout(() => {
+                    this.closeQuestion()
+                }, 1500)
+            })
+            if (this.state.triedToAnswer == this.state.contestants.length) {
+                this.questionOver(this.state.activeQuestion._id)
+            }
         }
 
-        this.setState({scores: scores,
-                     guess:guess, 
-                     correct:correct, 
-                     activeResult:true,
-                     resultTimer: setTimeout(() => {
-                        API.closeQuestion(this.state.gameID);   
-                     }, 3000)
-                 })
     }
-    handleAnswerUpdate = (answers) => {
-        this.setState({answered : answers})
+    questionOver = (questionid) => {
+        if (this.state.activeQuestion._id == questionid) {
+            this.setState({
+                activeResult: true,
+                questionOver: true,
+                resultTimer: setTimeout(() => {
+                    this.closeQuestionFinal()
+                }, 1500)
+            })
+        }
     }
-    closeQuestion = () => {
-        clearTimeout(this.state.timer)
-         this.setState({
+    closeQuestionFinal = () => {
+        this.setState({
             timer: "",
             activeQuestion: "",
             activeAnswer: false,
-            activeResult:false
+            activeResult: false,
+            questionOver: false
+        })
+    }
+
+    handleAnswerUpdate = (answers) => {
+        this.setState({ answered: answers })
+    }
+    closeQuestion = () => {
+        // clearTimeout(this.state.timer)
+        this.setState({
+            timer: "",
+            // activeQuestion: "",
+            activeAnswer: false,
+            activeResult: false
         })
     }
     displayQuestion = (questionid, index1, index2) => {
-        if(this.state.turn == this.state.playerNum){
+        if (this.state.turn == this.state.playerNum) {
             API.selectQuestion(questionid, this.state.gameID)
         }
     }
@@ -150,11 +192,11 @@ class App extends Component {
 
     }
     buzzIn = () => {
-        API.buzz(this.state.gameID, this.state.playerName)
+        API.buzz(this.state.gameID, this.state.playerName, this.state.activeQuestion._id)
     }
     handleBuzzUpdate = (playerName) => {
         this.setState({
-            activeAnswer:true,
+            activeAnswer: true,
             buzzedIn: playerName
         })
     }
@@ -167,22 +209,23 @@ class App extends Component {
         let turnChange = false;
         let correct
         // let userScore = this.state.scores[this.state.playerID];
-        if(this.state.guess != ""){
+        if (this.state.guess != "") {
             if (this.state.guess.toLowerCase() == correctAnswer.toLowerCase()) {
                 console.log("Correct")
                 this.state.scores[this.state.playerID] = this.state.scores[this.state.playerID] + parseInt(answerVal)
                 turnChange = true;
                 correct = true;
             } else {
+                this.setState({ canbuzz: false })
                 console.log(correctAnswer)
                 correct = false;
                 this.state.scores[this.state.playerID] = this.state.scores[this.state.playerID] - parseInt(answerVal)
             }
         }
         // API.closeQuestion(this.state.gameID);
-        if(turnChange){
+        if (turnChange) {
             API.submitScores(this.state.gameID, this.state.scores, this.state.playerNum, this.state.guess, correct)
-        }else{
+        } else {
             API.submitScores(this.state.gameID, this.state.scores, 0, this.state.guess, correct)
         }
     }
@@ -216,49 +259,72 @@ class App extends Component {
         API.createNewPlayer(this.state.newPlayerName)
             .then((player) => {
                 const cookies = new Cookies();
-                cookies.set("playerID", player.data._id );
-                cookies.set("playerName", player.data.name );
-                this.setState({playerID: player.data._id})
-                this.setState({playerName: player.data.name})
+                cookies.set("playerID", player.data._id);
+                cookies.set("playerName", player.data.name);
+                this.setState({ playerID: player.data._id })
+                this.setState({ playerName: player.data.name })
 
             })
             .catch(err => console.log(err));
     }
-    startGame = (gameID) =>{
-        this.setState({gameID: gameID});
-        this.setState({mainScreen:false});
-        API.connectToGame(gameID, this.state.playerID, this.handleQuestion, this.handleNewContestant, this.handleNewScores, this.handleAnswerUpdate, this.closeQuestion, this.handleBuzzUpdate, this.handleScoresInit).then(() =>{
+    timesUp = (playerName, questionId) => {
+
+        if (playerName == this.state.playerName && this.state.playerName == this.state.buzzedIn && this.state.activeAnswer && this.state.activeQuestion._id == questionId) {
+            this.setState({ canbuzz: false })
+            let correct = false;
+            let answerVal = this.state.activeQuestion.value.replace('$', '');
+            this.state.scores[this.state.playerID] = this.state.scores[this.state.playerID] - parseInt(answerVal)
+            API.submitScores(this.state.gameID, this.state.scores, 0, "", correct)
+        }
+    }
+    startGame = (gameID) => {
+        this.setState({ gameID: gameID });
+        this.setState({ mainScreen: false });
+        let reactFuncs = {
+            handleQuestion: this.handleQuestion,
+            handleNewContestant: this.handleNewContestant,
+            handleNewScores: this.handleNewScores,
+            handleBuzzUpdate: this.handleBuzzUpdate,
+            handleScoresInit: this.handleScoresInit,
+            handleAnswerUpdate: this.handleAnswerUpdate,
+            closeQuestion: this.closeQuestion,
+            timesUp: this.timesUp,
+            questionOver: this.questionOver
+        }
+
+        API.connectToGame(gameID, this.state.playerID, reactFuncs).then(() => {
             this.getGame(this.state.gameID);
+            console.log(this.state.contestants)
         })
     }
-    handleQuestion = (questionID) =>{
+    handleQuestion = (questionID) => {
 
-        let activeCategory = this.state.categories.filter((x, index)=>{
+        let activeCategory = this.state.categories.filter((x, index) => {
             return x.questions.some((element) => element._id == questionID);
         })
         let activeQuestion = activeCategory[0].questions.filter((x) => x._id == questionID);
         this.setState({
             activeQuestion: activeQuestion[0],
-            // timer: setTimeout(() => {
-            //     API.closeQuestion(this.state.gameID);   
-            // }, 10000)
-        })
-        const mouseClickEvents = [ 'click'];
-            function simulateMouseClick(element){
-              mouseClickEvents.forEach(mouseEventType =>
-                element.dispatchEvent(
-                  new MouseEvent(mouseEventType, {
-                      view: window,
-                      bubbles: true,
-                      cancelable: true,
-                      buttons: 1
-                  })
-                )
-              );
-            }
+            canbuzz: true
 
-            var element = document.querySelector('.question-name[id="' + questionID + '"] + .rs-container button');
-            simulateMouseClick(element);
+        })
+        const mouseClickEvents = ['click'];
+
+        function simulateMouseClick(element) {
+            mouseClickEvents.forEach(mouseEventType =>
+                element.dispatchEvent(
+                    new MouseEvent(mouseEventType, {
+                        view: window,
+                        bubbles: true,
+                        cancelable: true,
+                        buttons: 1
+                    })
+                )
+            );
+        }
+
+        var element = document.querySelector('.question-name[id="' + questionID + '"] + .rs-container button');
+        simulateMouseClick(element);
 
 
     }
@@ -270,14 +336,13 @@ class App extends Component {
                 </div>
                  {this.state.activeResult ? 
                 <Result 
+                questionOver = {this.state.questionOver}
                     buzz = {this.state.buzzedIn}
                     correct = {this.state.correct}
                     question = {this.state.activeQuestion}
                     guess = {this.state.guess}
                     me = {this.state.playerName}
 
-                    // handleAnswer = {this.handleAnswer}
-                    // answerQuestion = {this.answerQuestion}
                 />
                 
                 : ""}

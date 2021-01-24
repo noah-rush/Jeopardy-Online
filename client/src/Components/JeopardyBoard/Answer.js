@@ -12,7 +12,7 @@ var Answer = (props) => {
             </form>
             :
             <div className = "waiting">
-            {props.buzz} is currently answering
+            {props.buzzedIn} is currently answering
             </div>
           }
         </div>

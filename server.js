@@ -9,10 +9,10 @@ const mongoose = require('mongoose');
 const app = require('express')();
 const http = require('http').createServer(app);
 const io = require("socket.io")(http, {
-  cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"]
-  }
+    cors: {
+        origin: "http://localhost:3000",
+        methods: ["GET", "POST"]
+    }
 });
 
 // httpServer.listen(3000);
@@ -34,7 +34,24 @@ const uri =  process.env.MONGODB_URI;
 // const uri = 'mongodb://localhost/jeopardy'
 mongoose.connect(uri);
 
+let questionTimers = {}
+var Timer = function(callback, delay) {
+    var timerId, start, remaining = delay;
 
+    this.pause = function() {
+        clearTimeout(timerId);
+        remaining -= Date.now() - start;
+        console.log(remaining)
+    };
+
+    this.resume = function() {
+        start = Date.now();
+        clearTimeout(timerId);
+        timerId = setTimeout(callback, remaining);
+    };
+
+    this.resume();
+};
 
 io.on('connection', (client) => {
     console.log("we have io connection")
@@ -44,30 +61,64 @@ io.on('connection', (client) => {
     })
     client.on('selectQuestion', (questionId, gameid) => {
         io.in(gameid).emit('questionID', questionId);
-        db.Games.findOneAndUpdate({ _id: gameid }, { $push: { answered: questionId } }, {new:true}).then(function(result) {
+        db.Games.findOneAndUpdate({ _id: gameid }, { $push: { answered: questionId } }, { new: true }).then(function(result) {
             io.in(gameid).emit('answerUpdate', result.answered);
         })
-        setTimeout(() => {io.in(gameid).emit("questionOver", questionId)}, 20000);
-    })
-    client.on('closeQuestionSignal', (gameid) =>{
-        io.in(gameid).emit('gameCloseQuestion');      
-    })
-    client.on('newScores', (gameid, scores, turn, guess, correct) => {
+        questionTimers[gameid] = new Timer(() => { io.in(gameid).emit("questionOver", questionId) }, 10000);
 
+    })
+    client.on('closeQuestionSignal', (gameid) => {
+        io.in(gameid).emit('gameCloseQuestion');
+    })
+    client.on('newScores', (gameid, scores, turn, guess, correct, round) => {
         io.in(gameid).emit("scoresUpdate", scores, turn, guess, correct)
+        if (round != 3) {
+            questionTimers[gameid].resume()
+        }
         let newScores = []
         for (const [key, value] of Object.entries(scores)) {
             newScores.push(value)
         }
-        db.Games.findOneAndUpdate({ _id: gameid }, { scores:newScores  }).then(function(result) {
+        db.Games.findOneAndUpdate({ _id: gameid }, { scores: newScores }).then(function(result) {})
+    })
+    client.on('buzz', (gameid, playerName, questionId) => {
+        console.log("buzz received from " + playerName + " on question " + questionId)
+        io.in(gameid).emit("buzzUpdate", playerName)
+        questionTimers[gameid].pause()
+        setTimeout(() => { io.in(gameid).emit("timesUp", playerName, questionId) }, 3000);
+
+    })
+    client.on('updateRound', (gameid, round) => {
+        db.Games.findOneAndUpdate({ _id: gameid }, {
+            $set: { answered: [], round: round }
+        }).then(function() {
+
         })
     })
-    client.on('buzz', (gameid, playerName, questionId) =>{
-        console.log("buzz received from " + playerName +" on question "+ questionId)
-        io.in(gameid).emit("buzzUpdate",  playerName)
+    client.on('finalWager', (gameid, playerName, wager) => {
+        db.Games.findOneAndUpdate({ _id: gameid }, { $inc: { 'wagersReceived': 1 } }).then(function(data) {
+            console.log(data)
+            console.log(data.wagersReceived)
+            console.log(data.players.length)
+            if (data.wagersReceived >= data.players.length - 1) {
+                console.log("finally")
+                io.in(gameid).emit("initFinalQuestion")
 
-        setTimeout(() => {io.in(gameid).emit("timesUp",  playerName, questionId)}, 5000);
-
+            }
+        })
+    })
+    client.on('submitFinal', (gameid, playerName, guess) => {
+        io.in(gameid).emit("finalGuess", playerName, guess)
+        db.Games.findOneAndUpdate({ _id: gameid }, { $inc: { 'finalAnswersReceived': 1 } }).then(function(data) {
+            if (data.finalAnswersReceived >= data.players.length - 1) {
+                console.log("finally")
+                io.in(gameid).emit("gameOver")
+                db.Games.findOneAndUpdate({ _id: gameid }, { $set: { round: 4 } }).then(function(data){
+                    console.log(data)
+                    console.log("round 4")
+                })
+            }
+        })
     })
 });
 
@@ -91,10 +142,10 @@ app.post("/api/create-player", (req, res) => {
 app.post("/api/add-to-game", (req, res) => {
     let game = req.body.game;
     let player = req.body.player;
-    db.Games.findOneAndUpdate({ _id: game }, { $addToSet: { players: player }, $push: {scores: 0}  }, {new:true}).populate('players').then(function(result) {
+    db.Games.findOneAndUpdate({ _id: game }, { $addToSet: { players: player }, $push: { scores: 0 } }, { new: true }).populate('players').then(function(result) {
         io.in(game).emit('contestantUpdate', result.players)
         let scores = {};
-        for(let i = 0; i<result.players.length; i++){
+        for (let i = 0; i < result.players.length; i++) {
             scores[result.players[i]['_id']] = result.scores[i];
         }
         io.in(game).emit('scoresInit', scores)
@@ -124,15 +175,33 @@ app.post("/api/create-game", (req, res) => {
                         let counter2 = 0;
 
                         for (var i = 0; i < 6; i++) {
+
                             let skipRand = Math.floor(Math.random() * count);
                             db.Categories.findOne({ type: "Double Jeopardy" }).skip(skipRand).populate('questions').limit(1).then(function(result) {
                                 counter2 = counter2 + 1;
                                 doubleJeopCategories.push(result)
                                 if (counter2 == 6) {
 
-                                    db.Games.create({ title: req.body.name, doubleCategories: doubleJeopCategories, jeopardyCategories: jeopCategories }, function(err, small) {
-                                        res.send(small)
-                                    });
+
+                                    db.Categories.count({ type: "Final Jeopardy" }).then(function(count) {
+                                        let skipRand = Math.floor(Math.random() * count);
+                                        db.Categories.findOne({ type: "Final Jeopardy" }).skip(skipRand).populate('questions').limit(1).then(function(result) {
+
+                                            db.Games.create({
+                                                    title: req.body.name,
+                                                    doubleCategories: doubleJeopCategories,
+                                                    jeopardyCategories: jeopCategories,
+                                                    finalJeopardy: result
+                                                },
+                                                function(err, small) {
+                                                    res.send(small)
+                                                });
+
+                                        })
+                                    })
+
+
+
                                 }
                             })
                         }
@@ -154,6 +223,9 @@ app.get("/api/categories", (req, res) => {
     }).populate({
         path: 'doubleCategories',
         populate: { path: 'questions' }
+    }).populate({
+        path: 'finalJeopardy',
+        populate: { path: 'questions' }
     }).populate('players').then(function(result) {
         res.send(result);
     })
@@ -166,8 +238,8 @@ app.get("/api/games", (req, res) => {
 })
 
 app.get("/api/ip", (req, res) => {
-   console.log ( ip.address() );
-   res.send(ip.address())
+    console.log(ip.address());
+    res.send(ip.address())
 
 })
 

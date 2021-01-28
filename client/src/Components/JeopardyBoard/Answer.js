@@ -1,12 +1,12 @@
 import React, { Component } from "react";
 
-var Answer = (props) => {
+var Answer = React.forwardRef((props, ref) => {
     return (
         <div className = "active-answer-panel">
             {props.buzzedIn == props.me ?
 
             <form id = "answer-field" onSubmit = {(e) => {props.answerQuestion(e)}} >
-                <input onChange = {(e) => props.handleAnswer(e)} className = "answer" type = "text" name = "answer"></input>
+                <input ref={ref} onFocus={() => console.log('focus')} onChange = {(e) => props.handleAnswer(e)} className = "answer" type = "text" name = "answer"></input>
                 <input type = "submit"></input>
                 
             </form>
@@ -18,6 +18,6 @@ var Answer = (props) => {
         </div>
     )
 
-}
+})
 
 export default Answer;

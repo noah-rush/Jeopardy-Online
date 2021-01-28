@@ -14,8 +14,10 @@ var GamesSchema = new Schema({
   players: [ {type: mongoose.Schema.Types.ObjectId, ref: 'Players'}],
   scores: [{type:Number}],
   turn: {type:Number, default:1},
-  finalJeopardy: {type: mongoose.Schema.Types.ObjectId, ref: 'Questions'},
-  answered: [{type: mongoose.Schema.Types.ObjectId, ref: 'Questions'}]
+  finalJeopardy: {type: mongoose.Schema.Types.ObjectId, ref: 'Categories'},
+  answered: [{type: mongoose.Schema.Types.ObjectId, ref: 'Questions'}],
+  wagersReceived : {type: Number, default:0},
+  finalAnswersReceived:{type:Number, default:0}
 });
 
 // This creates our model from the above schema, using mongoose's model method

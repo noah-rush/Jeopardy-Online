@@ -23,11 +23,13 @@ const Dictaphone = ({
     }
     console.log(transcript);
     for (var i = 0; i < categories.length; i++) {
+        if (transcript != ""){
         if (transcript.toLowerCase() == categories[i].name.toLowerCase()) {
             // console.log("categoryMatch")
             pickCategory(i);
             resetTranscript();
         }
+    }
     }
     if (activeCategory != "") {
         for (var i = 0; i < categories[activeCategory].questions.length; i++) {

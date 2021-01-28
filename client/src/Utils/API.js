@@ -53,6 +53,9 @@ export default {
     socket.on('buzzUpdate', (playerName) => {reactFuncs['handleBuzzUpdate'](playerName)} );
     socket.on('timesUp', (playerName, questionId) => {reactFuncs['timesUp'](playerName, questionId)} );
     socket.on('questionOver', (questionId) => {reactFuncs['questionOver'](questionId)} );
+    socket.on('initFinalQuestion', () => reactFuncs['initFinalQuestion']());
+    socket.on('gameOver', () => reactFuncs['gameOver']());
+    socket.on('finalGuess', (player,guess) => reactFuncs['finalGuess'](player,guess));
 
     return axios.post("/api/add-to-game", {
       game:gameID,
@@ -60,17 +63,26 @@ export default {
     })
 
   },
+  updateRound(gameID, newRound){
+    socket.emit("updateRound", gameID, newRound)
+  },
   selectQuestion(questionID, gameid){
     socket.emit('selectQuestion', questionID, gameid)
   },
   closeQuestion(gameID){
     socket.emit('closeQuestionSignal', gameID);
   },
-  submitScores(gameid, scores, turn, answer, correct){
-    socket.emit('newScores', gameid, scores, turn, answer, correct)
+  submitScores(gameid, scores, turn, answer, correct, round){
+    socket.emit('newScores', gameid, scores, turn, answer, correct,round)
   },
   buzz(gameID, playerName, question){
     socket.emit('buzz', gameID, playerName, question)
+  },
+  placeFinalWager(gameID, playerName, wager){
+    socket.emit('finalWager', gameID, playerName, wager)
+  },
+   submitFinal(gameID, playerName, guess){
+    socket.emit('submitFinal', gameID, playerName, guess)
   }
   
 };

@@ -2,11 +2,12 @@ import React, { Component } from "react";
 import Speech from 'react-speech';
 
 var JeopardyBoard = (props) => {
-    // console.log(props.activeCategory)
+    // console.log(props.activeCategor
+    let categories =props.categories 
     return (
         <div className = "jeopardy-table">
-       
-              {props.categories.map((cat, index) => (
+
+              {categories.map((cat, index) => (
                 <div className = "category-column" key = {index}>
                     {index === props.activeCategory ? 
                     <div className ="cat-name cat-name-active ">{cat.name}</div>

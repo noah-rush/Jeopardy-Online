@@ -15,6 +15,9 @@ var Answer = React.forwardRef((props, ref) => {
             {props.buzzedIn} is currently answering
             </div>
           }
+          <div style ={{width:(100 - 100/6* (6-props.seconds) ) + "%"}} className = "answerTimer">
+
+          </div>
         </div>
     )
 

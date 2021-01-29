@@ -6,14 +6,14 @@ var Result = (props) => {
            <div className = "result-panel-inner">
                 {
                     props.questionOver ?
-<div className ="correct-answer">
-                    The answer was {props.question.answer}.
+                    <div className ="question-over">
+                    The answer was {props.question.answer}. 
                     </div>
                     : 
                     props.correct ?
                     <div className ="correct-answer">
                     The answer was {props.question.answer}.
-                    {props.buzz} gains {props.question.value}.
+                     {props.buzz} gains {props.question.value}.
                     The board is {props.buzz}'s
                     </div>
                 :

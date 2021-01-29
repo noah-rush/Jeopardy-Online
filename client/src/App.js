@@ -33,11 +33,10 @@ class App extends Component {
         activeQuestion: "",
         activeAnswer: false,
         activeResult: false,
-
         timer: "",
         userScore: 0,
         mainScreen: true,
-        activeCategory: "",
+        activeCategory: -1,
         newGameTitle: "",
         games: [],
         answered: [],
@@ -63,8 +62,10 @@ class App extends Component {
         finalQuestionAnswered: false,
         finalResults: false,
         finalGuesses: {},
-        gameOver: false
-
+        gameOver: false,
+        activeAnswerTimer: "",
+        guess: "",
+        resetSpeechTimer: setInterval(() => { this.resetSpeechRecog() }, 5000)
     }
 
     loadCookies() {
@@ -127,10 +128,10 @@ class App extends Component {
                     games: [],
                     answered: res.data.answered,
                     round: res.data.round,
-                    gameOver:gameOver
+                    gameOver: gameOver
                 })
                 // console.log(res.)
-              
+
 
                 let qsInRound = 0;
                 for (var i = 0; i < categories.length; i++) {
@@ -154,7 +155,7 @@ class App extends Component {
     }
     handleScoresInit = (scores) => {
 
-        this.setState({ scores: scores, preFinalScores:scores })
+        this.setState({ scores: scores, preFinalScores: scores })
 
     }
     handleNewScores = (scores, turn, guess, correct) => {
@@ -185,9 +186,7 @@ class App extends Component {
                         this.closeQuestion()
                     }, 1500)
                 })
-                if (this.state.triedToAnswer == this.state.contestants.length) {
-                    this.questionOver(this.state.activeQuestion._id)
-                }
+
             }
         } else {
             this.setState({
@@ -212,6 +211,8 @@ class App extends Component {
         this.setState({
             timer: "",
             activeQuestion: "",
+            guess: "",
+
             activeAnswer: false,
             activeResult: false,
             questionOver: false
@@ -225,7 +226,7 @@ class App extends Component {
         if (this.state.round == 2) {
             this.setState({ preFinalScores: this.state.scores, round: 3, answered: [], categories: this.state.doubleCategories })
             API.updateRound(this.state.gameID, 3)
-            
+
         }
         if (this.state.round == 1) {
             this.setState({ round: 2, answered: [], categories: this.state.doubleCategories })
@@ -246,11 +247,17 @@ class App extends Component {
         this.setState({
             timer: "",
             // activeQuestion: "",
+            guess: "",
             activeAnswer: false,
             activeResult: false
         })
+        if (this.state.triedToAnswer == this.state.contestants.length) {
+
+            this.questionOver(this.state.activeQuestion._id)
+
+        }
     }
-    displayQuestion = (questionid, index1, index2) => {
+    displayQuestion = (questionid) => {
         if (this.state.turn == this.state.playerNum) {
             API.selectQuestion(questionid, this.state.gameID)
         }
@@ -268,9 +275,14 @@ class App extends Component {
     handleBuzzUpdate = (playerName) => {
         this.setState({
             activeAnswer: true,
-            buzzedIn: playerName
+            buzzedIn: playerName,
+            answerSeconds: 6,
+            activeAnswerTimer: setInterval(() => {
+                this.setState({ answerSeconds: this.state.answerSeconds - 1 })
+            }, 1000)
         })
         this.answerField.current.focus()
+
     }
     answerFinalQuestion = (e) => {
         e.preventDefault();
@@ -291,15 +303,38 @@ class App extends Component {
     }
     answerQuestion = (e) => {
         e.preventDefault();
-
-
-        let correctAnswer = this.state.activeQuestion.answer
-        let answerVal = this.state.activeQuestion.value.replace('$', '');
-        let turnChange = false;
-        let correct
-        // let userScore = this.state.scores[this.state.playerID];
         if (this.state.guess != "") {
-            if (this.state.guess.toLowerCase() == correctAnswer.toLowerCase()) {
+            let possibleAnswers = []
+
+            clearInterval(this.state.activeAnswerTimer)
+            let answerVal = this.state.activeQuestion.value.replace('$', '');
+            let turnChange = false;
+            let correct
+
+            let guess = this.state.guess
+            let correctAnswer = this.state.activeQuestion.answer.toLowerCase()
+
+            var matcher = /[a-z]+/gi;
+            correctAnswer = correctAnswer.match(matcher);
+            if (correctAnswer[0].toLowerCase() == "the" || correctAnswer[0].toLowerCase() == "a") {
+                possibleAnswers.push(correctAnswer.join('').toLowerCase())
+                correctAnswer.splice(0, 1)
+            }
+            correctAnswer = correctAnswer.join('').toLowerCase();
+            possibleAnswers.push(correctAnswer)
+
+
+            if (guess != "") {
+                guess = guess.match(matcher);
+                guess = guess.join('').toLowerCase();
+            }
+            console.log(possibleAnswers);
+            console.log(guess);
+
+
+
+            // let userScore = this.state.scores[this.state.playerID];
+            if (possibleAnswers.includes(guess)) {
                 console.log("Correct")
                 this.state.scores[this.state.playerID] = this.state.scores[this.state.playerID] + parseInt(answerVal)
                 turnChange = true;
@@ -310,12 +345,13 @@ class App extends Component {
                 correct = false;
                 this.state.scores[this.state.playerID] = this.state.scores[this.state.playerID] - parseInt(answerVal)
             }
-        }
-        // API.closeQuestion(this.state.gameID);
-        if (turnChange) {
-            API.submitScores(this.state.gameID, this.state.scores, this.state.playerNum, this.state.guess, correct, this.state.round)
-        } else {
-            API.submitScores(this.state.gameID, this.state.scores, 0, this.state.guess, correct, this.state.round)
+
+            // API.closeQuestion(this.state.gameID);
+            if (turnChange) {
+                API.submitScores(this.state.gameID, this.state.scores, this.state.playerNum, this.state.guess, correct, this.state.round)
+            } else {
+                API.submitScores(this.state.gameID, this.state.scores, 0, this.state.guess, correct, this.state.round)
+            }
         }
     }
 
@@ -357,6 +393,7 @@ class App extends Component {
             .catch(err => console.log(err));
     }
     timesUp = (playerName, questionId) => {
+        clearInterval(this.state.activeAnswerTimer)
 
         if (!this.state.activeResult && playerName == this.state.playerName && this.state.playerName == this.state.buzzedIn && this.state.activeAnswer && this.state.activeQuestion._id == questionId) {
             this.setState({ canbuzz: false })
@@ -364,6 +401,7 @@ class App extends Component {
             let answerVal = this.state.activeQuestion.value.replace('$', '');
             this.state.scores[this.state.playerID] = this.state.scores[this.state.playerID] - parseInt(answerVal)
             API.submitScores(this.state.gameID, this.state.scores, 0, "", correct, this.state.round)
+
         }
     }
     finalGuess = (player, answer) => {
@@ -436,6 +474,28 @@ class App extends Component {
 
 
     }
+    resetSpeechRecog = () => {
+        if (this.state.gameID != "") {
+            const mouseClickEvents = ['click'];
+
+
+            function simulateMouseClick(element) {
+                mouseClickEvents.forEach(mouseEventType =>
+                    element.dispatchEvent(
+                        new MouseEvent(mouseEventType, {
+                            view: window,
+                            bubbles: true,
+                            cancelable: true,
+                            buttons: 1
+                        })
+                    )
+                );
+            }
+
+            var element = document.querySelector('#resetSpeech');
+            simulateMouseClick(element);
+        }
+    }
     handleFinalWager = (wager) => {
         // console.log(wager.target.value)
         this.setState({ finalWager: wager.target.value })
@@ -462,14 +522,15 @@ class App extends Component {
 
                 />
                 
-                : ""}
-                {this.state.activeAnswer ?
+                : 
+                this.state.activeAnswer ?
                 <Answer 
                     handleAnswer = {this.handleAnswer}
                     answerQuestion = {this.answerQuestion}
                     buzzedIn = {this.state.buzzedIn}
                     me = {this.state.playerName}
                     ref = {this.answerField}
+                    seconds = {this.state.answerSeconds}
                 />
                 : ""}
             {this.state.activeQuestion ? 
@@ -549,7 +610,12 @@ class App extends Component {
                 contestants = {this.state.contestants} 
                 turn = {this.state.turn}
             />
-            <SpeechRecognition displayQuestion = {this.displayQuestion} activeCategory = {this.state.activeCategory} categories = {this.state.categories} pickCategory = {this.pickCategory}></SpeechRecognition>
+            <SpeechRecognition 
+            displayQuestion = {this.displayQuestion} 
+            activeCategory = {this.state.activeCategory} 
+            categories = {this.state.categories} 
+            pickCategory = {this.pickCategory}
+        ></SpeechRecognition>
         </div>
     }
          

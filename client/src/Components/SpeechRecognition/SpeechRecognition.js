@@ -21,32 +21,48 @@ const Dictaphone = ({
     if (!browserSupportsSpeechRecognition) {
         return null;
     }
-    console.log(transcript);
-    for (var i = 0; i < categories.length; i++) {
-        if (transcript != ""){
-        if (transcript.toLowerCase() == categories[i].name.toLowerCase()) {
-            // console.log("categoryMatch")
-            pickCategory(i);
-            resetTranscript();
+    if (transcript != "") {
+
+        var matcher = /[a-z]+/gi;
+        console.log(transcript);
+        let guess = transcript.toLowerCase().match(matcher)
+        if (guess != null) {
+            guess = guess.join('')
         }
-    }
-    }
-    if (activeCategory != "") {
-        for (var i = 0; i < categories[activeCategory].questions.length; i++) {
-            // console.log(categories[activeCategory].questions[i].value.replace("$", ""))
-            if (transcript == categories[activeCategory].questions[i].value.replace("$", "")) {
-                // console.log("valueMatch")
-                // pic/kCategory(i);
-                // resetTranscript();
+        console.log(guess)
+        console.log(activeCategory)
+        for (var i = 0; i < categories.length; i++) {
+            // var matcher = /[a-z]+/gi;
+            let category = categories[i].name.toLowerCase().match(matcher);
+            category = category.join('');
+
+
+            // console.log(category)
+            // console.log(guess)
+            if (guess == category) {
+                // console.log("categoryMatch")
+                pickCategory(i);
                 resetTranscript();
 
-                displayQuestion(activeCategory, i)
+            }
+        }
+        if (activeCategory >-1 ) {
+            for (var i = 0; i < categories[activeCategory].questions.length; i++) {
+                // console.log(categories[activeCategory].questions[i].value.replace("$", ""))
+                if (transcript == categories[activeCategory].questions[i].value.replace("$", "")) {
+                    // console.log("valueMatch")
+                    // pic/kCategory(i);
+                    // resetTranscript();
+                    resetTranscript();
+
+                    displayQuestion(categories[activeCategory].questions[i]._id)
+                }
             }
         }
     }
     return (
         <div>
-      <button onClick={resetTranscript}>Reset</button>
+      <button id ="resetSpeech" onClick={resetTranscript}>Reset</button>
       <span>{transcript}</span>
     </div>
     );

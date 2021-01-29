@@ -21,7 +21,7 @@ var JeopardyBoard = (props) => {
                             :
                             <div key = {index2}>
                     <div id = {question._id} className ="question-name" 
-                    onClick = {() =>{props.displayQuestion(question._id, index, index2)}}>
+                    onClick = {() =>{props.displayQuestion(question._id)}}>
                      {question.value}
                      </div>
                     <Speech className = {question._id} text={question.question} ></Speech>

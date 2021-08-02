@@ -2,7 +2,7 @@
 
 ## About
 
-
+Jeopardy Online allows multiple people to play eachotehr in jeopardy over the internet. The questions are pulled from real jeopardy games via the j-archive fan site, and players can even accurately buzz in and use voice control to select categories and respond to answers. 
 
 ## Playing
 

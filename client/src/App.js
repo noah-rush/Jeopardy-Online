@@ -102,7 +102,6 @@ class App extends Component {
         API.getCategories(gameID)
             .then((res) => {
                 let categories = res.data.jeopardyCategories
-                // console.log(res.data)
                 let gameOver = false
                 if (res.data.round == 2) {
                     categories = res.data.doubleCategories
@@ -110,8 +109,6 @@ class App extends Component {
                 if (res.data.round == 4) {
                     gameOver = true
                 }
-                // console.log("round ")
-                // console.log(this.state.round)
                 if (res.data.round == 3) {
                     let preFinalScores = { ...this.state.scores }
                     this.setState({ preFinalScores: preFinalScores })
@@ -125,8 +122,6 @@ class App extends Component {
                     round: res.data.round,
                     gameOver: gameOver
                 })
-                // console.log(res.)
-
 
                 let qsInRound = 0;
                 for (var i = 0; i < categories.length; i++) {
@@ -154,7 +149,7 @@ class App extends Component {
 
     }
     handleNewScores = (scores, turn, guess, correct) => {
-        // console.log(turn)
+        clearInterval(this.state.activeAnswerTimer)
         if (this.state.round != 3) {
             if (turn != 0 && turn != undefined) {
                 this.setState({ turn: turn });
@@ -253,6 +248,7 @@ class App extends Component {
         }
     }
     displayQuestion = (questionid) => {
+        clearInterval(this.state.activeAnswerTimer)
         if (this.state.turn == this.state.playerNum) {
             API.selectQuestion(questionid, this.state.gameID)
         }else{
@@ -301,39 +297,19 @@ class App extends Component {
     answerQuestion = (e) => {
         e.preventDefault();
         if (this.state.guess != "") {
-            let possibleAnswers = []
 
             clearInterval(this.state.activeAnswerTimer)
             let answerVal = this.state.activeQuestion.value.replace('$', '');
             let turnChange = false;
-            let correct
 
-            let guess = this.state.guess
-            let correctAnswer = this.state.activeQuestion.answer.toLowerCase()
-
-            var matcher = /[a-z]+/gi;
-            correctAnswer = correctAnswer.match(matcher);
-            if (correctAnswer[0].toLowerCase() == "the" || correctAnswer[0].toLowerCase() == "a") {
-                possibleAnswers.push(correctAnswer.join('').toLowerCase())
-                correctAnswer.splice(0, 1)
-            }
-            correctAnswer = correctAnswer.join('').toLowerCase();
-            possibleAnswers.push(correctAnswer)
+            let correct = GAME.correctAnswer(this.state.guess, this.state.activeQuestion.answer.toLowerCase())
 
 
-            if (guess != "") {
-                guess = guess.match(matcher);
-                guess = guess.join('').toLowerCase();
-            }
-            if (possibleAnswers.includes(guess)) {
-                console.log("Correct")
+            if (correct) {
                 this.state.scores[this.state.playerID] = this.state.scores[this.state.playerID] + parseInt(answerVal)
                 turnChange = true;
-                correct = true;
             } else {
                 this.setState({ canbuzz: false })
-                console.log(correctAnswer)
-                correct = false;
                 this.state.scores[this.state.playerID] = this.state.scores[this.state.playerID] - parseInt(answerVal)
             }
 

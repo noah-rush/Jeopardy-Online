@@ -48,26 +48,32 @@
     src: url("fonts/Josefin_Sans/JosefinSans-SemiBoldItalic.ttf");
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Open+Sans&display=swap');
+
 body {
-    font-family: "JosefinSans";
+    font-family: 'Libre Baskerville';
 }
 
-@media(max-width: 766px){
-    .question-name{
+@media(max-width: 766px) {
+    .question-name {
         font-size: 20px;
     }
 }
-.contestant-active{
-    color:green;
+
+.contestant-active {
+    color: green;
 }
-#answer-field{
+
+#answer-field {
     /*display: none;*/
 }
-.active-answer-panel{
+
+.active-answer-panel, .answer-result-panel {
     position: fixed;
     width: 500px;
     height: 500px;
-    background: blue;
+    background: white;
+    border: 1px solid blue;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -76,11 +82,40 @@ body {
     max-width: 100%;
     max-height: 100%;
 }
-.answer-result-panel{
+
+.active-answer-panel:after, .answer-result-panel:after {
+    width: 475px;
+    height: 475px;
+    pointer-events: none;
+    border: 5px solid blue;
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.active-answer-panel form {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 350px;
+    text-align: center;
+
+}
+.active-answer-panel form input {
+
+-webkit-appearance: none;
+outline: none;
+border: 0px;
+border-bottom: 1px solid blue;
+}
+/*.answer-result-panel {
     position: fixed;
     width: 500px;
     height: 500px;
-    background: rgba(0,0,0,0.75);
+    background: rgba(0, 0, 0, 0.75);
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -88,33 +123,179 @@ body {
     display: flex;
     max-width: 100%;
     max-height: 100%;
-}
-.correct-answer, .incorrect-answer, .question-over, .times-up{
-    background:green;
-    width:300px;
-    height:300px;
+}*/
+
+.correct-answer,
+.incorrect-answer,
+.question-over,
+.times-up {
+    /*background: green;*/
+    /*width: 300px;*/
+    /*height: 300px;*/
     position: absolute;
-    left:50%;
-    top:50%;
-    transform:translate(-50%,-50%);
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Libre Baskerville';
+    text-align: center;
+    font-size:30px;
+
 }
-.incorrect-answer{
-    background:red;
+
+.incorrect-answer {
+    /*background: red/*;*/*/
 }
-.question-over{
+
+.question-over {
     background: white;
 }
-.times-up{background: white}
-@media(max-width: 766px){
 
+.times-up {
+    background: white
+}
+
+@media(max-width: 766px) {}
+
+.answerTimer {
+    background: blue;
+    position: absolute;
+    height: 15px;
+    left: 50%;
+    bottom: 30px;
+    transform: translate(-50%, 0%);
+
+}   
+
+.welcome-frame,
+.menu-frame,
+.wager-stage,
+.question-stage,
+.final-results {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    /*background: #060ce9;*/
+    padding: 150px;
+    border: 15px solid #060ce9;
+}
+
+.final-results .final-answer {
+    font-family: 'Libre Baskerville';
+    /*font-weight: 700;*/
+    /*color: #060ce9;*/
+    font-size: 30px;
+}
+
+.final-results .readout {
+    font-family: 'Libre Baskerville';
+    /*font-weight: 700;*/
+    /*color: #060ce9;*/
+    font-size: 30px;
+}
+
+.final-results .readout .player-name {
+    font-weight: 700;
+}
+
+.turn-warning {
+    font-family: 'Libre Baskerville';
+    /*font-weight: 700;*/
+    /*color: #060ce9;*/
+    font-size: 30px;
+}
+
+.past-game-readout {
+    font-family: 'Libre Baskerville';
+    /*font-weight: 700;*/
+    /*color: #060ce9;*/
+    font-size: 30px;
+}
+
+.question-stage h4 {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-weight: 700;
+    font-family: 'Libre Baskerville';
 
 }
 
-.answerTimer{
-    background:green;
-    position:absolute;
-    height:30px;
-    left:50%;
-    bottom:30px;
-    transform:translate(-50%, 0%);
+.question-stage h3 {
+    font-family: 'Libre Baskerville';
+    /*font-weight: 700;*/
+    /*color: #060ce9;*/
+    font-size: 30px;
+}
+
+.wager-stage h2,
+.welcome-frame h1 {
+    font-family: 'Libre Baskerville';
+    font-weight: 700;
+    /*color: #060ce9;*/
+    font-size: 50px;
+}
+
+.wager-stage .final-cat {
+    font-weight: 700;
+}
+
+.wager-stage h3 {
+    font-family: 'Libre Baskerville';
+    /*font-weight: 700;*/
+    /*color: #060ce9;*/
+    font-size: 30px;
+}
+
+.welcome-frame h2 {
+    font-family: 'Libre Baskerville';
+    font-weight: 700;
+    /*color: #060ce9;*/
+    font-size: 30px;
+}
+
+.menu-frame h3 {
+    font-family: 'Libre Baskerville';
+    font-weight: 700;
+    /*color: #060ce9;*/
+    font-size: 30px;
+}
+
+.menu-frame form {
+    margin-bottom: 50px;
+}
+
+.menu-frame ul {
+    padding: 0px;
+    margin: 0px;
+}
+
+.menu-frame li {
+    list-style-type: none;
+}
+
+.menu-frame li a {
+    font-size: 20px;
+    color: #060ce9 !important;
+    transition: all 0.3s;
+    cursor: pointer !important;
+}
+
+.menu-frame li a:hover {
+    font-size: 20px;
+    color: #e6af71 !important;
+}
+
+.question-name {
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.question-name:hover {
+    font-size: 55px;
+}
+
+.contestants-table {
+    background: white !important;
 }

@@ -16,6 +16,7 @@ var Contestants = (props) => {
                    </div>
             </div>
             ))}
+            <a onClick = {(e) =>{props.backToMenu(e)}} className = "backToMenu">Back to Menu</a>
         </div>
     )
 

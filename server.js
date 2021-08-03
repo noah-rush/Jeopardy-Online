@@ -30,7 +30,7 @@ if (process.env.NODE_ENV === "production") {
     app.use(express.static("client/build"));
 }
 
-const uri =  process.env.MONGODB_URI;
+const uri =  "mongodb+srv://noahjrush:CZIxMdMuJpuVmLYs@cluster0.znfd0.mongodb.net/jeopardy?retryWrites=true&w=majority";
 // const uri = 'mongodb://localhost/jeopardy'
 mongoose.connect(uri);
 
@@ -58,6 +58,11 @@ io.on('connection', (client) => {
     client.on('subscribeToGame', (gameid) => {
         console.log('client is subscribing to game ' + gameid);
         client.join(gameid);
+    })
+    client.on('unsubscribeFromGame', (gameid) =>{
+        console.log('client is unsubscribing from game ' + gameid);
+
+        client.leave(gameid)
     })
     client.on('selectQuestion', (questionId, gameid) => {
         io.in(gameid).emit('questionID', questionId);

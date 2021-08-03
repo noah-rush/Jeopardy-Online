@@ -11,6 +11,7 @@ var FinalJeopardy = (props) => {
             <h2>Welcome to Final Jeopardy</h2>
             {props.ready ? 
             <div className = "question-stage">
+            <h4>Wager: ${props.wager}</h4>
             <h3>{props.question.questions[0].question}</h3>
             {props.answered ?
                 <div className = "final-guess">
@@ -25,6 +26,8 @@ var FinalJeopardy = (props) => {
             </div>
             :
             <div className = "wager-stage">
+            <h2>Welcome to Final Jeopardy</h2>
+
             <h3>The category is <span className ="final-cat">{props.question.name}</span></h3>
             <h3>Place your wager</h3>
             {!props.wagerSubmitted ?
@@ -35,21 +38,7 @@ var FinalJeopardy = (props) => {
             :""}
             </div>
         }
-<div className = "contestants-table">
-            {props.contestants.map((player, index) => (
-    
-            
-            <div className =  "contestant" key = {index}>
-            
-                   <div className = "player-name">
-                      {player.name}
-                   </div>
-                   <div className = "player-score">
-                      {props.scores[player._id]}
-                   </div>
-            </div>
-            ))}
-        </div>
+
 
             </div>
             :

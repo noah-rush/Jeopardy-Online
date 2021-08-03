@@ -10,17 +10,13 @@ import Answer from './Components/JeopardyBoard/Answer'
 import Result from './Components/JeopardyBoard/Result'
 import FinalJeopardy from './Components/JeopardyBoard/FinalJeopardy'
 import GameOver from './Components/JeopardyBoard/GameOver'
-
+import TurnWarning from './Components/JeopardyBoard/TurnWarning'
 import MainMenu from './Components/MainMenu'
 import Welcome from './Components/WelcomeScreen'
 import { withCookies, Cookies } from 'react-cookie';
 import { instanceOf } from 'prop-types';
 
 import SpeechRecognition from './Components/SpeechRecognition/SpeechRecognition';
-
-
-
-
 
 
 
@@ -38,6 +34,7 @@ class App extends Component {
         mainScreen: true,
         activeCategory: -1,
         newGameTitle: "",
+        game :"",
         games: [],
         answered: [],
         gameID: "",
@@ -65,15 +62,12 @@ class App extends Component {
         gameOver: false,
         activeAnswerTimer: "",
         guess: "",
-        resetSpeechTimer: setInterval(() => { this.resetSpeechRecog() }, 5000)
+        resetSpeechTimer: setInterval(() => { this.resetSpeechRecog() }, 5000),
+        turnWarning:false
     }
 
     loadCookies() {
-        // cookies = instanceOf(Cookies).isRequired;
         const cookies = new Cookies();
-        // console.log(Cookies)
-        // console.log(cookies.get("playerName"));
-        // cookies.set("playerName", "juancho")
         this.setState({
             playerName: cookies.get("playerName") || "",
             playerID: cookies.get("playerID") || "",
@@ -260,6 +254,8 @@ class App extends Component {
     displayQuestion = (questionid) => {
         if (this.state.turn == this.state.playerNum) {
             API.selectQuestion(questionid, this.state.gameID)
+        }else{
+            this.setState({turnWarning:true})
         }
     }
     pickCategory = (index1) => {
@@ -373,9 +369,11 @@ class App extends Component {
     createNewGame = (e) => {
         e.preventDefault();
         API.createNewGame(this.state.newGameTitle)
-            .then(() => {
-                console.log("getting games")
-                this.getGames();
+            .then((data) => {
+                // console.log(data)
+                // console.log("getting games")
+                // this.getGames();
+                this.startGame(data.data._id, data.data.title)
             })
             .catch(err => console.log(err));
     }
@@ -413,10 +411,20 @@ class App extends Component {
         console.log("game Over")
         this.setState({ gameOver: true })
     }
-    startGame = (gameID) => {
+    backToMain = (e) =>{
+        e.preventDefault()
+        this.setState({ mainScreen: true });
+        API.disconnectFromGame(this.state.gameID);
+        this.setState({ gameID: "", game:"", turnWarning:false });
+        this.getGames()
+ 
 
 
-        this.setState({ gameID: gameID });
+    }
+    startGame = (gameID, gameName) => {
+
+
+        this.setState({ gameID: gameID, game:gameName });
         this.setState({ mainScreen: false });
         let reactFuncs = {
             handleQuestion: this.handleQuestion,
@@ -475,7 +483,7 @@ class App extends Component {
 
     }
     resetSpeechRecog = () => {
-        if (this.state.gameID != "") {
+        if (this.state.gameID != "" && this.state.round<3) {
             const mouseClickEvents = ['click'];
 
 
@@ -505,12 +513,27 @@ class App extends Component {
         this.setState({ finalWagerSubmitted: true })
         API.placeFinalWager(this.state.gameID, this.state.playerName, this.state.finalWager)
     }
+
+    closeWarning = () =>{
+        this.setState({turnWarning:false})
+    }
     render() {
         return (
             <div className = "jeopardy-game">
+                {this.state.turnWarning ? 
+                    <TurnWarning close = {this.closeWarning} turn = {this.state.contestants[this.state.turn -1].name}></TurnWarning> :""}
+                
                 <div className = "utility-menu">
-                {this.state.mainScreen ? <h3 className = "my-name">{this.state.playerName}</h3> : ""}
+                {this.state.playerID != "" ? 
+                <div className ="game-info">
+                <h3 className = "my-name">{this.state.playerName}
+                {this.state.game !="" ? "  |  " + this.state.game : ""}
+                </h3> 
                 </div>
+                : ""}
+                </div>
+
+
                  {this.state.activeResult ? 
                 <Result 
                 questionOver = {this.state.questionOver}
@@ -533,6 +556,8 @@ class App extends Component {
                     seconds = {this.state.answerSeconds}
                 />
                 : ""}
+
+
             {this.state.activeQuestion ? 
                 <Question 
                     question = {this.state.activeQuestion}
@@ -544,6 +569,8 @@ class App extends Component {
                 />
                 
             : ""}
+
+
             {this.state.mainScreen ? 
                 this.state.playerID == "" ?
                 <div className = "player-reg">
@@ -561,8 +588,10 @@ class App extends Component {
                 </MainMenu>
                 </div>
                 :
-                this.state.round >= 3?
+                this.state.round >= 3 ?
+
                 this.state.gameOver ?
+                <div>
                 <GameOver
                 finalGuesses = {this.state.finalGuesses}
                 scores = {this.state.preFinalScores}
@@ -571,11 +600,25 @@ class App extends Component {
                 finalAnswer = {this.state.finalJeopardy.questions[0].answer}
 
                 />
+                <Contestants
+                scores = {this.state.scores}
+                contestants = {this.state.contestants} 
+                turn = '9'
+                backToMenu = {this.backToMain}
+            />
+            </div>
                 :
                 <div className = "jeopardy-board">
+                <Contestants
+                scores = {this.state.scores}
+                contestants = {this.state.contestants} 
+                turn = '9'
+                backToMenu = {this.backToMain}
+            />
                 <FinalJeopardy
         
                 wagerSubmitted = {this.state.finalWagerSubmitted}
+                wager = {this.state.finalWager}
                 handleWager = {this.handleFinalWager}
                 placeWager = {this.placeFinalWager}
                 ready = {this.state.finalQuestion}
@@ -609,6 +652,7 @@ class App extends Component {
                 scores = {this.state.scores}
                 contestants = {this.state.contestants} 
                 turn = {this.state.turn}
+                backToMenu = {this.backToMain}
             />
             <SpeechRecognition 
             displayQuestion = {this.displayQuestion} 

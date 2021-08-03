@@ -13,7 +13,7 @@ var JeopardyBoard = (props) => {
                 <ul>
                     {props.games.map((game, index) => (
                         <li className = "active-game" key = {index}>
-                        <a onClick = {(e) =>{props.startGame(game._id)}}>
+                        <a onClick = {(e) =>{props.startGame(game._id, game.title)}}>
                         {game.title}
                         </a>
                         </li>

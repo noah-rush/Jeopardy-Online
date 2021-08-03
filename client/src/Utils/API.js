@@ -41,13 +41,17 @@ export default {
     socket.on('timer', timestamp => cb(null, timestamp));
     socket.emit('subscribeToTimer', 5000);
   },
+  disconnectFromGame(gameID){
+    socket.emit('unsubscribeFromGame', gameID);
+
+  },
   connectToGame(gameID, playerId, reactFuncs){
     socket.emit('subscribeToGame', gameID);
+
     socket.on('questionID', questionID =>  reactFuncs['handleQuestion']( questionID) );
     socket.on('contestantUpdate', player =>  reactFuncs['handleNewContestant'](player) );
     socket.on('scoresUpdate', (scores, turn, guess, correct) =>  reactFuncs['handleNewScores'](scores, turn, guess, correct) );
     socket.on('scoresInit', (scores) =>  reactFuncs['handleScoresInit'](scores) );
-
     socket.on('answerUpdate', answers =>  reactFuncs['handleAnswerUpdate'](answers) );
     socket.on('gameCloseQuestion', () => {reactFuncs['closeQuestion']()} );
     socket.on('buzzUpdate', (playerName) => {reactFuncs['handleBuzzUpdate'](playerName)} );

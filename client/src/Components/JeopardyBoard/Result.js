@@ -26,9 +26,9 @@ var Result = (props) => {
                 <div className ="incorrect-answer">
                     {/*The answer was {props.question.answer}.*/}
                     {props.buzz} guessed {props.guess} and loses {props.question.value}.
-                    {props.me == props.buzz ? 
+                {/*    {props.me == props.buzz ? 
                     <button id = "challenge"> Challenge</button>
-                    :""}
+                    :""}*/}
 
                 </div>
                 }

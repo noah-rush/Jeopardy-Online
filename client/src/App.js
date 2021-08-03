@@ -154,29 +154,31 @@ class App extends Component {
             if (turn != 0 && turn != undefined) {
                 this.setState({ turn: turn });
             }
-            if (correct) {
-                this.setState({
-                    scores: scores,
-                    guess: guess,
-                    correct: correct,
-                    activeResult: true,
-                    resultTimer: setTimeout(() => {
-                        this.closeQuestionFinal()
-                    }, 1500)
-                })
-            } else {
+            if (!this.state.activeResult) {
+                if (correct) {
+                    this.setState({
+                        scores: scores,
+                        guess: guess,
+                        correct: correct,
+                        activeResult: true,
+                        resultTimer: setTimeout(() => {
+                            this.closeQuestionFinal()
+                        }, 1500)
+                    })
+                } else {
 
-                this.setState({
-                    scores: scores,
-                    guess: guess,
-                    correct: correct,
-                    activeResult: true,
-                    triedToAnswer: this.state.triedToAnswer + 1,
-                    resultTimer: setTimeout(() => {
-                        this.closeQuestion()
-                    }, 1500)
-                })
+                    this.setState({
+                        scores: scores,
+                        guess: guess,
+                        correct: correct,
+                        activeResult: true,
+                        triedToAnswer: this.state.triedToAnswer + 1,
+                        resultTimer: setTimeout(() => {
+                            this.closeQuestion()
+                        }, 1500)
+                    })
 
+                }
             }
         } else {
             this.setState({

@@ -266,6 +266,7 @@ class App extends Component {
         API.buzz(this.state.gameID, this.state.playerName, this.state.activeQuestion._id)
     }
     handleBuzzUpdate = (playerName) => {
+        console.log(playerName)
         this.setState({
             activeAnswer: true,
             buzzedIn: playerName,

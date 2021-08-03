@@ -35,7 +35,7 @@ class App extends Component {
         mainScreen: true,
         activeCategory: -1,
         newGameTitle: "",
-        game :"",
+        game: "",
         games: [],
         answered: [],
         gameID: "",
@@ -64,7 +64,7 @@ class App extends Component {
         activeAnswerTimer: "",
         guess: "",
         resetSpeechTimer: setInterval(() => { this.resetSpeechRecog() }, 5000),
-        turnWarning:false
+        turnWarning: false
     }
 
     loadCookies() {
@@ -251,8 +251,8 @@ class App extends Component {
         clearInterval(this.state.activeAnswerTimer)
         if (this.state.turn == this.state.playerNum) {
             API.selectQuestion(questionid, this.state.gameID)
-        }else{
-            this.setState({turnWarning:true})
+        } else {
+            this.setState({ turnWarning: true })
         }
     }
     pickCategory = (index1) => {
@@ -267,16 +267,19 @@ class App extends Component {
     }
     handleBuzzUpdate = (playerName) => {
         console.log(playerName)
-        this.setState({
-            activeAnswer: true,
-            buzzedIn: playerName,
-            answerSeconds: 6,
-            activeAnswerTimer: setInterval(() => {
-                this.setState({ answerSeconds: this.state.answerSeconds - 1 })
-            }, 1000)
-        })
-        this.answerField.current.focus()
+        if (!this.state.activeAnswer) {
 
+
+            this.setState({
+                activeAnswer: true,
+                buzzedIn: playerName,
+                answerSeconds: 6,
+                activeAnswerTimer: setInterval(() => {
+                    this.setState({ answerSeconds: this.state.answerSeconds - 1 })
+                }, 1000)
+            })
+            this.answerField.current.focus()
+        }
     }
     answerFinalQuestion = (e) => {
         e.preventDefault();
@@ -382,20 +385,20 @@ class App extends Component {
         console.log("game Over")
         this.setState({ gameOver: true })
     }
-    backToMain = (e) =>{
+    backToMain = (e) => {
         e.preventDefault()
         this.setState({ mainScreen: true });
         API.disconnectFromGame(this.state.gameID);
-        this.setState({ gameID: "", game:"", turnWarning:false });
+        this.setState({ gameID: "", game: "", turnWarning: false });
         this.getGames()
- 
+
 
 
     }
     startGame = (gameID, gameName) => {
 
 
-        this.setState({ gameID: gameID, game:gameName });
+        this.setState({ gameID: gameID, game: gameName });
         this.setState({ mainScreen: false });
         let reactFuncs = {
             handleQuestion: this.handleQuestion,
@@ -454,7 +457,7 @@ class App extends Component {
 
     }
     resetSpeechRecog = () => {
-        if (this.state.gameID != "" && this.state.round<3) {
+        if (this.state.gameID != "" && this.state.round < 3) {
             const mouseClickEvents = ['click'];
 
 
@@ -485,8 +488,8 @@ class App extends Component {
         API.placeFinalWager(this.state.gameID, this.state.playerName, this.state.finalWager)
     }
 
-    closeWarning = () =>{
-        this.setState({turnWarning:false})
+    closeWarning = () => {
+        this.setState({ turnWarning: false })
     }
     render() {
         return (

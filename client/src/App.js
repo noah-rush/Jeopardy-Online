@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import "./App.css";
 import API from "./Utils/API";
+import GAME from "./Utils/game";
 
 import Speech from 'react-speech';
 import JeopardyBoard from './Components/JeopardyBoard/JeopardyBoard'
@@ -324,12 +325,6 @@ class App extends Component {
                 guess = guess.match(matcher);
                 guess = guess.join('').toLowerCase();
             }
-            console.log(possibleAnswers);
-            console.log(guess);
-
-
-
-            // let userScore = this.state.scores[this.state.playerID];
             if (possibleAnswers.includes(guess)) {
                 console.log("Correct")
                 this.state.scores[this.state.playerID] = this.state.scores[this.state.playerID] + parseInt(answerVal)
@@ -342,7 +337,6 @@ class App extends Component {
                 this.state.scores[this.state.playerID] = this.state.scores[this.state.playerID] - parseInt(answerVal)
             }
 
-            // API.closeQuestion(this.state.gameID);
             if (turnChange) {
                 API.submitScores(this.state.gameID, this.state.scores, this.state.playerNum, this.state.guess, correct, this.state.round)
             } else {

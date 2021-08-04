@@ -10,7 +10,10 @@ It works just like regular jeopardy! Create a player name, join or create a game
 
 
 
-https://user-images.githubusercontent.com/7725659/127913760-303bff9a-b431-49dc-96e1-3c595213c284.mp4
+
+
+https://user-images.githubusercontent.com/7725659/128102490-d73282d5-fa2d-4c22-81ae-19c509f4817e.mp4
+
 
 
 

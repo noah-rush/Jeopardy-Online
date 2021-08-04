@@ -9,6 +9,7 @@ var Question = React.forwardRef((props, ref) => {
             {props.canbuzz ?
             <button ref={ref} onFocus={() => console.log('focus')} onClick = {() => props.buzz()} id = "buzzer">BUZZ IN!</button>
             :""}
+            <div style ={{width:(80 - 80/8* (8-props.seconds) ) + "%"}} className = "questionTimer"></div>
         </div>
     )
 

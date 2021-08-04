@@ -60,6 +60,7 @@ export default {
     socket.on('initFinalQuestion', () => reactFuncs['initFinalQuestion']());
     socket.on('gameOver', () => reactFuncs['gameOver']());
     socket.on('finalGuess', (player,guess) => reactFuncs['finalGuess'](player,guess));
+    socket.on('questionTimerUpdate', (time) => reactFuncs['timerUpdate'](time));
 
     return axios.post("/api/add-to-game", {
       game:gameID,
@@ -85,7 +86,7 @@ export default {
   placeFinalWager(gameID, playerName, wager){
     socket.emit('finalWager', gameID, playerName, wager)
   },
-   submitFinal(gameID, playerName, guess){
+  submitFinal(gameID, playerName, guess){
     socket.emit('submitFinal', gameID, playerName, guess)
   }
   

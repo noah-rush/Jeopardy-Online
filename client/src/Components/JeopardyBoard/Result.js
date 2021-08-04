@@ -1,8 +1,15 @@
 import React, { Component } from "react";
 
 var Result = (props) => {
+    let answerClass = 'answer-result-panel'
+    if (props.correct){
+    answerClass = 'answer-result-panel answer-correct'
+    }
+    if (!props.correct && !props.questionOver){
+    answerClass = 'answer-result-panel answer-incorrect'
+    }
     return (
-        <div className = "answer-result-panel">
+        <div className = {answerClass}>
            <div className = "result-panel-inner">
                 {
                     props.questionOver ?

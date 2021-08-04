@@ -93,8 +93,16 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    transition: all 0.5s;
 }
+.answer-result-panel.answer-correct:after{
+    border-color:green;
 
+}
+.answer-result-panel.answer-incorrect:after{
+    border-color: red;
+
+}
 .active-answer-panel form {
     position: absolute;
     top: 50%;
@@ -158,6 +166,15 @@ border-bottom: 1px solid blue;
 
 .answerTimer {
     background: blue;
+    position: absolute;
+    height: 15px;
+    left: 50%;
+    bottom: 30px;
+    transform: translate(-50%, 0%);
+
+} 
+.questionTimer {
+    background: green;
     position: absolute;
     height: 15px;
     left: 50%;

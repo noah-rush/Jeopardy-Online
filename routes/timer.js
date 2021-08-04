@@ -12,7 +12,12 @@ var Timer = function(callback, delay) {
         clearTimeout(timerId);
         timerId = setTimeout(callback, remaining);
     };
-
+    this.timeLeft = function(){
+        // remaining -= Date.now() - start;
+        console.log(remaining)
+        
+    	return remaining - (Date.now() - start)
+    }
     this.resume();
 };
 

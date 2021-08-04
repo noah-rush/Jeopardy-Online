@@ -64,7 +64,8 @@ class App extends Component {
         activeAnswerTimer: "",
         guess: "",
         resetSpeechTimer: setInterval(() => { this.resetSpeechRecog() }, 5000),
-        turnWarning: false
+        turnWarning: false,
+        questionTimer:8
     }
 
     loadCookies() {
@@ -87,8 +88,12 @@ class App extends Component {
         this.getGames();
         this.buzzButton = React.createRef();
         this.answerField = React.createRef();
-
-
+    }
+    componentWillUnmount(){
+        API.disconnectFromGame(this.state.gameID)
+        clearInterval(this.state.resetSpeechTimer)
+        clearInterval(this.state.resultTimer)
+        
     }
     getGames = () => {
         API.getGames()
@@ -187,11 +192,12 @@ class App extends Component {
         }
 
     }
-    questionOver = (questionid) => {
+    endQuestion = (questionid) => {
         if (this.state.activeQuestion._id == questionid) {
             this.setState({
                 activeResult: true,
                 triedToAnswer: 0,
+                questionTimer:0,
                 questionOver: true,
                 resultTimer: setTimeout(() => {
                     this.closeQuestionFinal()
@@ -204,11 +210,12 @@ class App extends Component {
             timer: "",
             activeQuestion: "",
             guess: "",
-
             activeAnswer: false,
             activeResult: false,
-            questionOver: false
+            questionOver: false,
+            questionTimer:8
         })
+        API.closeQuestion(this.state.gameID)
         if (this.state.totalQuestionsInRound == this.state.answered.length) {
             this.startNextRound()
 
@@ -235,17 +242,15 @@ class App extends Component {
         this.setState({ answered: answers })
     }
     closeQuestion = () => {
-        // clearTimeout(this.state.timer)
         this.setState({
             timer: "",
-            // activeQuestion: "",
             guess: "",
             activeAnswer: false,
             activeResult: false
         })
         if (this.state.triedToAnswer == this.state.contestants.length) {
 
-            this.questionOver(this.state.activeQuestion._id)
+            this.endQuestion(this.state.activeQuestion._id)
 
         }
     }
@@ -397,6 +402,9 @@ class App extends Component {
 
 
     }
+    timerUpdate = (time) =>{
+        this.setState({questionTimer:time})
+    }
     startGame = (gameID, gameName) => {
 
 
@@ -411,10 +419,11 @@ class App extends Component {
             handleAnswerUpdate: this.handleAnswerUpdate,
             closeQuestion: this.closeQuestion,
             timesUp: this.timesUp,
-            questionOver: this.questionOver,
+            questionOver: this.endQuestion,
             initFinalQuestion: this.initFinalQuestion,
             finalGuess: this.finalGuess,
-            gameOver: this.gameOver
+            gameOver: this.gameOver,
+            timerUpdate:this.timerUpdate
         }
 
         API.connectToGame(gameID, this.state.playerID, reactFuncs).then(() => {
@@ -536,6 +545,7 @@ class App extends Component {
 
             {this.state.activeQuestion ? 
                 <Question 
+                    seconds = {this.state.questionTimer}
                     question = {this.state.activeQuestion}
                     buzz = {this.buzzIn}
                     canbuzz = {this.state.canbuzz}
